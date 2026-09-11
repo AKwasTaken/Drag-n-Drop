@@ -7,42 +7,52 @@
 }
 
 :root {
-  --paper: #f3f0e6;
-  --paper-deep: #eae4d3;
-  --ink: #23241d;
-  --muted: #726f63;
-  --moss: #3f6b52;
-  --moss-deep: #223b2c;
-  --clay: #b56a3c;
-  --danger: #a83f36;
-  --line: #d9d3c1;
+  /* Base retained exactly as requested */
+  --paper: #D9E3E8;
+  --paper-deep: #cad7de;
+  --paper-translucent: rgba(255, 255, 255, 0.45);
+
+  /* Deep slate/navy tones to match the cool paper base */
+  --ink: #111a24;
+  --muted: #4e6070;
+  --accent: #1e3a5f;
+  --accent-glow: rgba(30, 58, 95, 0.12);
+  --accent-contrast: #d97736; /* Warm ochre/terracotta for pop & action cues */
+  --danger: #b8332a;
+  --line: rgba(17, 26, 36, 0.18);
+  --line-strong: rgba(17, 26, 36, 0.75);
 
   --font-serif: 'STIX Two Text', Georgia, serif;
   --font-sans: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
 }
 
+/* Strictly lock viewport to one screen wide and tall; disable all scrolling */
 html, body {
-  width: 100%;
-  min-height: 100%;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
   background-color: var(--paper);
   color: var(--ink);
   font-family: var(--font-sans);
-  overflow-x: hidden;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
 ::selection {
-  background: var(--moss);
-  color: var(--paper);
+  background: var(--accent);
+  color: #ffffff;
 }
 
 /* Fullscreen Drop Zone Container */
 .anv-drop-surface {
   position: relative;
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
   width: 100vw;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 /* Full-viewport drag overlay */
@@ -50,7 +60,8 @@ html, body {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(34, 59, 44, 0.93);
+  background: rgba(17, 26, 36, 0.88);
+  backdrop-filter: blur(6px);
   z-index: 9999;
   pointer-events: none;
   align-items: center;
@@ -62,69 +73,75 @@ html, body {
 }
 
 .anv-overlay-box {
-  border: 1px solid rgba(243, 240, 230, 0.5);
-  padding: 3.5rem 4rem;
+  border: 2px dashed rgba(217, 227, 232, 0.6);
+  border-radius: 4px;
+  padding: 3.5rem 4.5rem;
   text-align: center;
   color: var(--paper);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .anv-overlay-box svg {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   margin-bottom: 1.25rem;
-  stroke: var(--paper);
+  stroke: var(--accent-contrast);
 }
 
 .anv-overlay-box p {
   font-family: var(--font-serif);
-  font-size: 1.4rem;
-  font-style: italic;
+  font-size: 1.5rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
 }
 
 /* Layout */
 .anv-container {
   width: 100%;
-  max-width: 720px;
+  max-width: 760px;
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 1.75rem;
 }
 
 .anv-header {
-  padding: 3.25rem 0 2.5rem;
-  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+  padding: 2.75rem 0 2rem;
+  border-bottom: 1.5px solid var(--line);
 }
 
 .anv-header .anv-container {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 2.5rem;
+  gap: 2rem;
   flex-wrap: wrap;
 }
 
 .anv-title {
   font-family: var(--font-serif);
-  font-size: 1.9rem;
-  font-weight: 400;
-  letter-spacing: 0.2px;
+  font-size: 2.1rem;
+  font-weight: 600;
+  letter-spacing: -0.3px;
   color: var(--ink);
   white-space: nowrap;
 }
 
-/* Token field — underline style, not a boxed card */
+/* Token field — editorial underline with accent highlight */
 .anv-field-group {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.4rem;
   width: 100%;
-  max-width: 300px;
+  max-width: 290px;
   margin-left: auto;
 }
 
 .anv-field-group label {
   font-family: var(--font-mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.02em;
+  font-size: 0.72rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   color: var(--muted);
 }
 
@@ -132,21 +149,22 @@ html, body {
   width: 100%;
   font-family: var(--font-mono);
   font-size: 0.85rem;
-  padding: 0.3rem 0;
+  padding: 0.45rem 0.2rem;
   border: none;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1.5px solid var(--line);
   background: transparent;
   color: var(--ink);
   outline: none;
-  transition: border-color 0.15s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .anv-field-group input:focus {
-  border-color: var(--moss);
+  border-color: var(--accent);
+  box-shadow: 0 1px 0 var(--accent);
 }
 
 .anv-field-group input::placeholder {
-  color: #b3ae9e;
+  color: #8da0af;
 }
 
 .anv-field-hint {
@@ -156,45 +174,59 @@ html, body {
 
 .anv-field-hint code {
   font-family: var(--font-mono);
-  color: var(--moss-deep);
+  color: var(--accent);
+  font-weight: 500;
 }
 
+/* Main content absorbs the middle section */
 .anv-main {
-  flex: 1;
-  padding: 2.75rem 0 5rem;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  padding: 2.25rem 0 1rem;
 }
 
-/* Drop hero */
+/* Drop hero — given tactile substance instead of a plain wire box */
 .anv-drop-prompt {
   width: 100%;
-  border: 1.5px dashed var(--line);
-  padding: 5rem 2rem;
+  border: 1.5px dashed rgba(30, 58, 95, 0.4);
+  background: var(--paper-translucent);
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5), 0 4px 16px rgba(17, 26, 36, 0.04);
+  padding: 3.5rem 2rem;
   text-align: center;
   cursor: pointer;
-  background: transparent;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
 }
 
 .anv-drop-prompt:hover,
 .anv-drop-prompt:focus-visible {
-  border-color: var(--moss);
-  background: var(--paper-deep);
+  border-color: var(--accent);
+  background: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: inset 0 0 0 1px rgba(30, 58, 95, 0.2), 0 8px 24px var(--accent-glow);
 }
 
 .anv-drop-icon {
-  margin: 0 auto 1.1rem;
-  width: 30px;
-  height: 30px;
-  stroke: var(--moss);
+  margin: 0 auto 1rem;
+  width: 34px;
+  height: 34px;
+  stroke: var(--accent-contrast);
+  stroke-width: 1.6;
   display: block;
+  transition: transform 0.2s ease;
+}
+
+.anv-drop-prompt:hover .anv-drop-icon {
+  transform: translateY(-2px);
 }
 
 .anv-drop-title {
   font-family: var(--font-serif);
-  font-size: 1.3rem;
-  font-weight: 400;
+  font-size: 1.45rem;
+  font-weight: 500;
   color: var(--ink);
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.35rem;
 }
 
 .anv-drop-text {
@@ -203,9 +235,14 @@ html, body {
 }
 
 .anv-browse-link {
-  color: var(--moss-deep);
+  color: var(--accent);
+  font-weight: 500;
   text-decoration: underline;
-  text-underline-offset: 2px;
+  text-underline-offset: 3px;
+}
+
+.anv-browse-link:hover {
+  color: var(--accent-contrast);
 }
 
 .anv-file-hidden {
@@ -214,7 +251,7 @@ html, body {
 
 /* Upload ledger */
 .anv-status-container {
-  margin-top: 2.5rem;
+  margin-top: 2rem;
 }
 
 .anv-status-container:empty {
@@ -222,7 +259,7 @@ html, body {
 }
 
 .anv-upload-card {
-  padding: 1rem 0;
+  padding: 1.1rem 0;
   border-bottom: 1px solid var(--line);
   animation: fadeIn 0.2s ease;
 }
@@ -243,23 +280,26 @@ html, body {
 
 .anv-card-header .status-label {
   font-size: 0.78rem;
-  color: var(--clay);
+  font-weight: 500;
+  color: var(--accent-contrast);
   white-space: nowrap;
 }
 
 .anv-card-header .status-ok {
-  color: var(--moss);
+  color: #2b7a4b;
+  font-weight: 500;
   white-space: nowrap;
 }
 
 .anv-card-header .status-fail {
   color: var(--danger);
+  font-weight: 500;
   white-space: nowrap;
 }
 
 .anv-card-meta {
-  margin-top: 0.25rem;
-  font-size: 0.78rem;
+  margin-top: 0.3rem;
+  font-size: 0.76rem;
   color: var(--muted);
   font-family: var(--font-mono);
 }
@@ -275,20 +315,21 @@ html, body {
   flex: 1;
   font-family: var(--font-mono);
   font-size: 0.8rem;
-  padding: 0.4rem 0;
-  border: none;
-  border-bottom: 1px solid var(--line);
-  background: transparent;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.6);
   color: var(--ink);
   min-width: 0;
 }
 
 .anv-copy-btn {
   background: none;
-  color: var(--moss-deep);
+  color: var(--accent);
   border: none;
   padding: 0;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
+  font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
   font-family: var(--font-mono);
@@ -297,13 +338,13 @@ html, body {
 }
 
 .anv-copy-btn:hover {
-  color: var(--moss);
+  color: var(--accent-contrast);
 }
 
 .anv-delay-warning {
   margin-top: 0.6rem;
   font-size: 0.76rem;
-  color: var(--clay);
+  color: var(--accent-contrast);
   line-height: 1.45;
 }
 
@@ -314,6 +355,21 @@ html, body {
   font-family: var(--font-mono);
 }
 
+/* Image pinned to the bottom without height limits */
+.anv-bottom-banner {
+  flex-shrink: 0;
+  width: 100%;
+  line-height: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.anv-bottom-banner img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(3px); }
   to { opacity: 1; transform: translateY(0); }
@@ -321,7 +377,7 @@ html, body {
 
 @media (max-width: 640px) {
   .anv-header {
-    padding: 2rem 0 1.5rem;
+    padding: 1.75rem 0 1.25rem;
   }
   .anv-header .anv-container {
     flex-direction: column;
@@ -333,7 +389,7 @@ html, body {
     margin-left: 0;
   }
   .anv-drop-prompt {
-    padding: 3.5rem 1.25rem;
+    padding: 2.25rem 1.25rem;
   }
   .anv-container {
     padding: 0 1.25rem;
