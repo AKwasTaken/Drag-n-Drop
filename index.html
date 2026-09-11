@@ -15,7 +15,13 @@
     <div id="drop-zone" class="anv-drop-surface">
       <div class="anv-drop-overlay-indicator" aria-hidden="true">
         <div class="anv-overlay-box">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke-width="1.4"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <path d="M12 3v13" />
             <path d="M6 11l6 6 6-6" />
             <path d="M4 21h16" />
@@ -24,9 +30,10 @@
         </div>
       </div>
 
+      <!-- Completely isolated clean header -->
       <header class="anv-header">
         <div class="anv-container">
-          <h1 class="anv-title">Media Uploader</h1>
+          <h1 class="anv-title">Anvesha Media</h1>
 
           <div class="anv-field-group">
             <label for="gh-token">GitHub token</label>
@@ -40,29 +47,81 @@
         </div>
       </header>
 
+      <!-- Main workspace: footer graphic lives strictly inside here -->
       <main class="anv-main">
         <div class="anv-container">
           <!-- Screen-wide Drop Panel Prompt -->
           <div class="anv-drop-prompt" id="drop-trigger">
-            <svg class="anv-drop-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+            <svg
+              class="anv-drop-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke-width="1.4"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
               <path d="M12 3v13" />
               <path d="M6 11l6 6 6-6" />
               <path d="M4 21h16" />
             </svg>
             <p class="anv-drop-title">Drag &amp; drop files anywhere</p>
-            <p class="anv-drop-text">or <span class="anv-browse-link">browse from your computer</span></p>
-            <input type="file" id="file-input" class="anv-file-hidden" multiple />
+            <p class="anv-drop-text">
+              or <span class="anv-browse-link">browse from your computer</span>
+            </p>
+            <input
+              type="file"
+              id="file-input"
+              class="anv-file-hidden"
+              multiple
+            />
           </div>
+
+          <!-- Opens the preview modal for whatever's currently selected/dropped -->
+          <button
+            type="button"
+            id="review-upload-btn"
+            class="anv-primary-btn"
+            disabled
+          >
+            Review &amp; Upload
+            <span id="staged-count" class="anv-btn-count" hidden>0</span>
+          </button>
 
           <!-- Staging / Commits Queue -->
           <div id="status-container" class="anv-status-container"></div>
         </div>
-      </main>
 
-      <!-- Always pinned to bottom -->
-      <footer class="anv-bottom-banner">
-        <img src="/depend/header.png" alt="Footer Banner" />
-      </footer>
+        <!-- Pinned strictly inside main; cut off by main's top edge -->
+        <footer class="anv-bottom-banner">
+          <img src="/depend/footer.png" alt="Footer Banner" />
+        </footer>
+      </main>
+    </div>
+
+    <!-- Preview / confirm modal -->
+    <div id="preview-modal" class="anv-modal-overlay" hidden>
+      <div
+        class="anv-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="anv-modal-title"
+      >
+        <div class="anv-modal-head">
+          <h2 id="anv-modal-title">Review before upload</h2>
+          <p class="anv-modal-sub">
+            These files will be committed to the repository.
+          </p>
+        </div>
+        <div class="anv-modal-body" id="modal-preview-list"></div>
+        <div class="anv-modal-foot">
+          <button type="button" id="modal-cancel-btn" class="anv-btn-ghost">
+            Cancel
+          </button>
+          <button type="button" id="modal-upload-btn" class="anv-btn-primary">
+            Upload
+          </button>
+        </div>
+      </div>
     </div>
 
     <script src="depend/upload.js" defer></script>

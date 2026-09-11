@@ -11,6 +11,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const fileInput = document.getElementById("file-input");
   const tokenInput = document.getElementById("gh-token");
   const statusContainer = document.getElementById("status-container");
+  const reviewBtn = document.getElementById("review-upload-btn");
+  const stagedCountEl = document.getElementById("staged-count");
+
+  const modal = document.getElementById("preview-modal");
+  const modalPreviewList = document.getElementById("modal-preview-list");
+  const modalCancelBtn = document.getElementById("modal-cancel-btn");
+  const modalUploadBtn = document.getElementById("modal-upload-btn");
+
+  let stagedFiles = [];
+  let previewObjectUrls = [];
 
   // Load saved token from local storage
   tokenInput.value = localStorage.getItem("anvesha_pat") || "";
@@ -22,7 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
   dropTrigger.addEventListener("click", () => fileInput.click());
   fileInput.addEventListener("change", (e) => {
     if (e.target.files && e.target.files.length > 0) {
-      handleFiles(Array.from(e.target.files));
+      stageFiles(Array.from(e.target.files));
       fileInput.value = "";
     }
   });
@@ -55,9 +65,27 @@ document.addEventListener("DOMContentLoaded", () => {
     dropZone.classList.remove("is-dragover");
 
     if (e.dataTransfer && e.dataTransfer.files.length > 0) {
-      handleFiles(Array.from(e.dataTransfer.files));
+      stageFiles(Array.from(e.dataTransfer.files));
     }
   });
+
+  // --- Staging -------------------------------------------------------------
+
+  function stageFiles(files) {
+    stagedFiles = stagedFiles.concat(files);
+    refreshStagedUI();
+  }
+
+  function refreshStagedUI() {
+    reviewBtn.disabled = stagedFiles.length === 0;
+    stagedCountEl.hidden = stagedFiles.length === 0;
+    stagedCountEl.textContent = String(stagedFiles.length);
+  }
+
+  function clearStaged() {
+    stagedFiles = [];
+    refreshStagedUI();
+  }
 
   // Folder assignment logic
   function resolveTargetFolder(filename) {
@@ -65,6 +93,17 @@ document.addEventListener("DOMContentLoaded", () => {
     if (IMAGE_EXTS.includes(ext)) return "img";
     if (DOC_EXTS.includes(ext)) return "doc";
     return "file";
+  }
+
+  function isImageFile(filename) {
+    const ext = filename.split(".").pop().toLowerCase();
+    return IMAGE_EXTS.includes(ext);
+  }
+
+  function formatBytes(bytes) {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   }
 
   function toBase64(file) {
@@ -76,18 +115,99 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  async function handleFiles(files) {
+  // --- Preview modal ----------------------------------------------------------
+
+  function openPreviewModal() {
+    modalPreviewList.innerHTML = "";
+    previewObjectUrls.forEach((url) => URL.revokeObjectURL(url));
+    previewObjectUrls = [];
+
+    stagedFiles.forEach((file, idx) => {
+      const folder = resolveTargetFolder(file.name);
+      const sanitizedName = file.name.replace(/\s+/g, "-");
+
+      let mediaHtml;
+      if (isImageFile(file.name)) {
+        const url = URL.createObjectURL(file);
+        previewObjectUrls.push(url);
+        mediaHtml = `<img class="anv-preview-thumb" src="${url}" alt="${sanitizedName}" />`;
+      } else {
+        const ext = (file.name.split(".").pop() || "?").toUpperCase();
+        mediaHtml = `<div class="anv-preview-file-icon">${ext}</div>`;
+      }
+
+      const item = document.createElement("div");
+      item.className = "anv-preview-item";
+      item.innerHTML = `
+        ${mediaHtml}
+        <div class="anv-preview-meta">
+          <div class="anv-preview-name">${sanitizedName}</div>
+          <div class="anv-preview-sub">${folder}/ &middot; ${formatBytes(file.size)}</div>
+        </div>
+        <button type="button" class="anv-preview-remove" data-idx="${idx}" aria-label="Remove file">&times;</button>
+      `;
+      modalPreviewList.appendChild(item);
+    });
+
+    modalPreviewList.querySelectorAll(".anv-preview-remove").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const idx = Number(btn.dataset.idx);
+        stagedFiles.splice(idx, 1);
+        refreshStagedUI();
+        if (stagedFiles.length === 0) {
+          closePreviewModal();
+        } else {
+          openPreviewModal();
+        }
+      });
+    });
+
+    modal.hidden = false;
+  }
+
+  function closePreviewModal() {
+    modal.hidden = true;
+  }
+
+  reviewBtn.addEventListener("click", () => {
     const token = tokenInput.value.trim();
     if (!token) {
       alert("Please enter a valid GitHub token before uploading.");
       tokenInput.focus();
       return;
     }
+    if (stagedFiles.length === 0) return;
+    openPreviewModal();
+  });
 
-    for (const file of files) {
+  modalCancelBtn.addEventListener("click", () => {
+    clearStaged();
+    closePreviewModal();
+  });
+
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      modalCancelBtn.click();
+    }
+  });
+
+  modalUploadBtn.addEventListener("click", async () => {
+    const token = tokenInput.value.trim();
+    if (!token) {
+      alert("Please enter a valid GitHub token before uploading.");
+      return;
+    }
+
+    const filesToUpload = stagedFiles.slice();
+    clearStaged();
+    closePreviewModal();
+
+    for (const file of filesToUpload) {
       await uploadFile(file, token);
     }
-  }
+  });
+
+  // --- Actual GitHub commit ---------------------------------------------------
 
   async function uploadFile(file, token) {
     const folder = resolveTargetFolder(file.name);
@@ -151,7 +271,11 @@ document.addEventListener("DOMContentLoaded", () => {
         throw new Error(errorData.message || "Commit rejected by GitHub API.");
       }
 
-      const rawUrl = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}/${targetPath}`;
+      // Extract raw link returned directly by the API response
+      const uploadData = await putRes.json();
+      const rawUrl =
+        uploadData.content?.download_url ||
+        `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}/${targetPath}`;
 
       card.className = "anv-upload-card success";
       card.innerHTML = `
@@ -175,7 +299,7 @@ document.addEventListener("DOMContentLoaded", () => {
         linkInput.select();
         navigator.clipboard.writeText(rawUrl);
         copyBtn.textContent = "Copied!";
-        setTimeout(() => (copyBtn.textContent = "Copy Link"), 2000);
+        setTimeout(() => (copyBtn.textContent = "Copy link"), 2000);
       });
 
     } catch (err) {
