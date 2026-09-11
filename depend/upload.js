@@ -99,9 +99,9 @@ document.addEventListener("DOMContentLoaded", () => {
     card.innerHTML = `
       <div class="anv-card-header">
         <span>${sanitizedName}</span>
-        <span class="status-label">Staging to GitHub...</span>
+        <span class="status-label">Uploading&hellip;</span>
       </div>
-      <div class="anv-card-meta">Target destination: /${targetPath}</div>
+      <div class="anv-card-meta">${targetPath}</div>
     `;
     statusContainer.prepend(card);
 
@@ -156,16 +156,16 @@ document.addEventListener("DOMContentLoaded", () => {
       card.className = "anv-upload-card success";
       card.innerHTML = `
         <div class="anv-card-header">
-          <strong>${sanitizedName}</strong>
-          <span style="color: var(--moss);">&check; Committed</span>
+          <span>${sanitizedName}</span>
+          <span class="status-ok">Committed</span>
         </div>
-        <div class="anv-card-meta">Path: ${targetPath}</div>
+        <div class="anv-card-meta">${targetPath}</div>
         <div class="anv-link-output">
           <input type="text" class="anv-link-input" value="${rawUrl}" readonly />
-          <button class="anv-copy-btn">Copy Link</button>
+          <button class="anv-copy-btn">Copy link</button>
         </div>
         <p class="anv-delay-warning">
-          &#9888; <strong>Notice:</strong> The file might still be caching on GitHub's raw CDN servers. If the link returns 404 or an older version, allow 2 to 5 minutes before checking again.
+          May take a few minutes to appear on the raw CDN.
         </p>
       `;
 
@@ -183,7 +183,7 @@ document.addEventListener("DOMContentLoaded", () => {
       card.innerHTML = `
         <div class="anv-card-header">
           <span>${sanitizedName}</span>
-          <span style="color: var(--danger);">&cross; Failed</span>
+          <span class="status-fail">Failed</span>
         </div>
         <p class="anv-error-msg">${err.message}</p>
       `;
