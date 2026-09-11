@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Anvesha Asset Dispatch</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="depend/styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&display=swap"
+    />
+  </head>
+  <body>
+    <!-- Fullscreen Drag & Drop Target -->
+    <div id="drop-zone" class="anv-drop-surface">
+      <div class="anv-drop-overlay-indicator" aria-hidden="true">
+        <div class="anv-overlay-box">
+          <span class="anv-overlay-icon">&darr;</span>
+          <p>Drop files anywhere to commit to Anvesha</p>
+        </div>
+      </div>
+
+      <header class="anv-header">
+        <div class="anv-container">
+          <h1 class="anv-title"><em>Anvesha</em></h1>
+        </div>
+      </header>
+
+      <main class="anv-main">
+        <div class="anv-container">
+          <!-- Auth Section -->
+          <div class="anv-card anv-auth-box">
+            <div class="anv-field-group">
+              <label for="gh-token">GitHub Personal Access Token</label>
+              <input
+                type="password"
+                id="gh-token"
+                placeholder="github_pat_... or ghp_..."
+                autocomplete="off"
+              />
+              <span class="anv-field-hint">Requires <code>Contents: Read and write</code> permissions. Persisted in local storage.</span>
+            </div>
+          </div>
+
+          <!-- Screen-wide Drop Panel Prompt -->
+          <div class="anv-drop-prompt" id="drop-trigger">
+            <div class="anv-drop-icon" aria-hidden="true">&darr;</div>
+            <p class="anv-drop-title">Drag &amp; drop files anywhere across the screen</p>
+            <p class="anv-drop-text">or <span class="anv-browse-link">browse from your computer</span></p>
+            <input type="file" id="file-input" class="anv-file-hidden" multiple />
+          </div>
+
+          <!-- Staging / Commits Queue -->
+          <div id="status-container" class="anv-status-container"></div>
+        </div>
+      </main>
+    </div>
+
+    <script src="depend/upload.js" defer></script>
+  </body>
+</html>
