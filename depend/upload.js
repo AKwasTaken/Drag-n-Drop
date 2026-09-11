@@ -1,7 +1,25 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const REPO_OWNER = "cmitiiser";
-  const REPO_NAME = "cmitiiser.github.io";
+
+  const REPO_URL = "https://github.com/AKwasTaken/Drag-n-Drop.git";
   const BRANCH = "main";
+
+  function parseGitHubRepo(urlOrSlug) {
+    if (!urlOrSlug) return null;
+    const cleaned = urlOrSlug
+      .trim()
+      .replace(/\.git\/?$/, "")
+      .replace(/\/+$/, "");
+
+    const match = cleaned.match(/(?:github\.com\/|^)([a-zA-Z0-9_.-]+)\/([a-zA-Z0-9_.-]+)$/);
+    if (!match) return null;
+
+    return {
+      owner: match[1],
+      repo: match[2],
+    };
+  }
+
+  const repoTarget = parseGitHubRepo(REPO_URL);
 
   const IMAGE_EXTS = ["jpg", "jpeg", "png", "webp", "gif", "svg", "avif", "ico"];
   const DOC_EXTS = ["pdf", "xlsx", "xls", "csv", "doc", "docx", "ppt", "pptx", "txt"];
@@ -14,13 +32,21 @@ document.addEventListener("DOMContentLoaded", () => {
   const reviewBtn = document.getElementById("review-upload-btn");
   const stagedCountEl = document.getElementById("staged-count");
 
+  // Review Modal elements
   const modal = document.getElementById("preview-modal");
   const modalPreviewList = document.getElementById("modal-preview-list");
   const modalCancelBtn = document.getElementById("modal-cancel-btn");
   const modalUploadBtn = document.getElementById("modal-upload-btn");
 
+  // Activity Modal elements
+  const activityModal = document.getElementById("activity-modal");
+  const activityToggleBtn = document.getElementById("activity-toggle-btn");
+  const activityCloseBtn = document.getElementById("activity-close-btn");
+  const activityCountEl = document.getElementById("activity-count");
+
   let stagedFiles = [];
   let previewObjectUrls = [];
+  let uploadCount = 0;
 
   // Load saved token from local storage
   tokenInput.value = localStorage.getItem("anvesha_pat") || "";
@@ -69,7 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // --- Staging -------------------------------------------------------------
+  // --- Staging Logic --------------------------------------------------------
 
   function stageFiles(files) {
     stagedFiles = stagedFiles.concat(files);
@@ -87,7 +113,12 @@ document.addEventListener("DOMContentLoaded", () => {
     refreshStagedUI();
   }
 
-  // Folder assignment logic
+  function updateActivityBadge() {
+    activityCountEl.hidden = uploadCount === 0;
+    activityCountEl.textContent = String(uploadCount);
+  }
+
+  // File resolution helpers
   function resolveTargetFolder(filename) {
     const ext = filename.split(".").pop().toLowerCase();
     if (IMAGE_EXTS.includes(ext)) return "img";
@@ -115,7 +146,23 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // --- Preview modal ----------------------------------------------------------
+  // --- Activity Modal handlers ----------------------------------------------
+
+  activityToggleBtn.addEventListener("click", () => {
+    activityModal.hidden = false;
+  });
+
+  activityCloseBtn.addEventListener("click", () => {
+    activityModal.hidden = true;
+  });
+
+  activityModal.addEventListener("click", (e) => {
+    if (e.target === activityModal) {
+      activityModal.hidden = true;
+    }
+  });
+
+  // --- Preview Modal handlers -----------------------------------------------
 
   function openPreviewModal() {
     modalPreviewList.innerHTML = "";
@@ -170,6 +217,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   reviewBtn.addEventListener("click", () => {
+    if (!repoTarget) {
+      alert("Invalid REPO_URL configuration. Please specify a valid GitHub repository URL in depend/upload.js.");
+      return;
+    }
     const token = tokenInput.value.trim();
     if (!token) {
       alert("Please enter a valid GitHub token before uploading.");
@@ -202,14 +253,17 @@ document.addEventListener("DOMContentLoaded", () => {
     clearStaged();
     closePreviewModal();
 
+    activityModal.hidden = false;
+
     for (const file of filesToUpload) {
       await uploadFile(file, token);
     }
   });
 
-  // --- Actual GitHub commit ---------------------------------------------------
+  // --- GitHub API Upload ----------------------------------------------------
 
   async function uploadFile(file, token) {
+    const { owner, repo } = repoTarget;
     const folder = resolveTargetFolder(file.name);
     const sanitizedName = file.name.replace(/\s+/g, "-");
     const targetPath = `${folder}/${sanitizedName}`;
@@ -231,7 +285,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Check for existing file SHA to enable overwriting
       let sha = null;
       const getRes = await fetch(
-        `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${targetPath}`,
+        `https://api.github.com/repos/${owner}/${repo}/contents/${targetPath}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -248,7 +302,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Commit to GitHub via PUT /contents/
       const putRes = await fetch(
-        `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${targetPath}`,
+        `https://api.github.com/repos/${owner}/${repo}/contents/${targetPath}`,
         {
           method: "PUT",
           headers: {
@@ -271,11 +325,14 @@ document.addEventListener("DOMContentLoaded", () => {
         throw new Error(errorData.message || "Commit rejected by GitHub API.");
       }
 
-      // Extract raw link returned directly by the API response
+      // Extract raw link returned directly by the API
       const uploadData = await putRes.json();
       const rawUrl =
         uploadData.content?.download_url ||
-        `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}/${targetPath}`;
+        `https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/${targetPath}`;
+
+      uploadCount++;
+      updateActivityBadge();
 
       card.className = "anv-upload-card success";
       card.innerHTML = `

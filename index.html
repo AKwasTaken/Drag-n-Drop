@@ -33,7 +33,7 @@
       <!-- Completely isolated clean header -->
       <header class="anv-header">
         <div class="anv-container">
-          <h1 class="anv-title">Anvesha Media</h1>
+          <h1 class="anv-title">ANVESHA '26</h1>
 
           <div class="anv-field-group">
             <label for="gh-token">GitHub token</label>
@@ -47,7 +47,7 @@
         </div>
       </header>
 
-      <!-- Main workspace: footer graphic lives strictly inside here -->
+      <!-- Main workspace -->
       <main class="anv-main">
         <div class="anv-container">
           <!-- Screen-wide Drop Panel Prompt -->
@@ -76,24 +76,38 @@
             />
           </div>
 
-          <!-- Opens the preview modal for whatever's currently selected/dropped -->
-          <button
-            type="button"
-            id="review-upload-btn"
-            class="anv-primary-btn"
-            disabled
-          >
-            Review &amp; Upload
-            <span id="staged-count" class="anv-btn-count" hidden>0</span>
-          </button>
+          <!-- Bottom Action Bar: Opposite corners -->
+          <div class="anv-action-bar">
+            <!-- Bottom Left: Upload Activity & History -->
+            <button
+              type="button"
+              id="activity-toggle-btn"
+              class="anv-secondary-btn"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 8v4l3 3" />
+                <circle cx="12" cy="12" r="9" />
+              </svg>
+              Activity &amp; Progress
+              <span id="activity-count" class="anv-btn-count" hidden>0</span>
+            </button>
 
-          <!-- Staging / Commits Queue -->
-          <div id="status-container" class="anv-status-container"></div>
+            <!-- Bottom Right: Review & Upload -->
+            <button
+              type="button"
+              id="review-upload-btn"
+              class="anv-primary-btn"
+              disabled
+            >
+              Review &amp; Upload
+              <span id="staged-count" class="anv-btn-count" hidden>0</span>
+            </button>
+          </div>
         </div>
 
-        <!-- Pinned strictly inside main; cut off by main's top edge -->
+        <!-- Pinned strictly inside main -->
         <footer class="anv-bottom-banner">
-          <img src="depend/footer.png" alt="Footer Banner" />
+          <img src="/depend/footer.png" alt="Footer Banner" />
         </footer>
       </main>
     </div>
@@ -119,6 +133,29 @@
           </button>
           <button type="button" id="modal-upload-btn" class="anv-btn-primary">
             Upload
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upload Activity Modal -->
+    <div id="activity-modal" class="anv-modal-overlay" hidden>
+      <div
+        class="anv-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="activity-modal-title"
+      >
+        <div class="anv-modal-head">
+          <h2 id="activity-modal-title">Upload Activity</h2>
+          <p class="anv-modal-sub">Recent commits and uploaded file links.</p>
+        </div>
+        <div class="anv-modal-body">
+          <div id="status-container" class="anv-status-container"></div>
+        </div>
+        <div class="anv-modal-foot">
+          <button type="button" id="activity-close-btn" class="anv-btn-ghost">
+            Close
           </button>
         </div>
       </div>
